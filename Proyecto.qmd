@@ -8,7 +8,7 @@ editor: visual
 
 ```{r}
 #Colocar ruta del dataframe
-df <- read.csv("data")
+df <- read.csv("/home/pallavi/git/course/statistics/final_project/data/log2.csv")
 ```
 
 ```{r , results='hide', warning=FALSE, message=FALSE}
