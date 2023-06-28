@@ -1,0 +1,167 @@
+---
+title: "Trabajo Final"
+format: pdf
+editor: visual
+---
+
+```{r}
+df <- read.csv("C:/Users/aaron/Desktop/USM/Analisis de Negocios/garments_worker_productivity.csv")
+```
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(GGally)
+library(MLmetrics)
+library(lmtest)
+library(car)
+library(gsubfn)
+library(readr)
+library(tidyverse)
+library(DataExplorer)
+library(rsample)
+library(parsnip)
+library(recipes)
+library(workflows)
+library(yardstick)
+library(caret)
+library(tensorflow)
+library(keras)
+library(reticulate)
+library(nnet)
+library(parallel)
+library(doParallel)
+library(MASS)
+library(rpart)
+library(rpart.plot)
+library(corrplot)
+library(skimr)
+library(neuralnet)
+library(nnet)
+library(keras)
+```
+
+```{r}
+skim(df)
+```
+
+```{r}
+df[is.na(df)] <- 0
+colSums(is.na(df))
+```
+
+```{r}
+colSums(is.na(df))
+```
+
+```{r}
+plot_intro(df)
+```
+
+```{r}
+df[is.na(df)] <- 0
+colSums(is.na(df))
+```
+
+```{r}
+df <- df[, c("quarter", "team", "targeted_productivity","smv","wip","over_time","incentive","idle_time","idle_men","no_of_style_change","no_of_workers","actual_productivity")]
+
+```
+
+```{r}
+df <- within(df, quarter[quarter == 'Quarter1'] <- 1)
+df <- within(df, quarter[quarter == 'Quarter2'] <- 2)
+df <- within(df, quarter[quarter == 'Quarter3'] <- 3)
+df <- within(df, quarter[quarter == 'Quarter4'] <- 4)
+df <- within(df, quarter[quarter == 'Quarter5'] <- 5)
+```
+
+```{r}
+df$quarter <- as.numeric(df$quarter)
+split <- initial_split(df, prop = 0.8)
+train_data <- training(split)
+test_data <- testing(split)
+concrete_model <- neuralnet(actual_productivity~., data = train_data)
+plot(concrete_model, rep="best")
+```
+
+```{r}
+# Verificar si hay valores perdidos en train_data
+missing_values <- is.na(train_data)
+
+# Obtener el número total de valores perdidos
+total_missing <- sum(missing_values)
+
+# Imprimir el resultado
+print(total_missing)
+```
+
+```{r}
+concrete_model_2 <- neuralnet(
+  actual_productivity ~ .,
+  data = train_data,
+  hidden = c(5,22),
+  act.fct = "logistic",
+  learningrate = 0.01,
+  rep = 2
+)
+plot(concrete_model_2, rep = "best")
+```
+
+```{r}
+resultados <- compute(concrete_model_2, test_data)
+predicted_2 <- resultados$net.result
+```
+
+```{r}
+valores_actuales<-test_data$actual_productivity
+MSE<-function(predicted_2,valores_actuales){
+  n<-length(predicted_2)
+  errores_cuadrados<-sum((predicted_2-valores_actuales)^2)
+  return(errores_cuadrados/n)
+}
+MSE(predicted_2,valores_actuales)
+```
+
+```{r}
+MAE<-function(predicted_2,valores_actuales){
+  n<-length(predicted_2)
+  errores_absolutos<-sum(abs(predicted_2-valores_actuales))
+  return(errores_absolutos/n)
+}
+MAE(predicted_2,valores_actuales)
+```
+
+```{r}
+MAPE<-function(predicted_2,valores_actuales){
+  n<-length(predicted_2)
+  errores_absolutos_porcentaje<-sum(abs((predicted_2-valores_actuales)/valores_actuales)*100)
+  return(errores_absolutos_porcentaje/n)
+}
+
+MAPE(predicted_2,valores_actuales)
+```
+
+```{r}
+concrete_model_1 <- keras_model_sequential() %>%
+  layer_dense(units = 64, activation = "relu", input_shape = ncol(train_data) - 1) %>%
+  layer_dense(units = 32, activation = "relu") %>%
+  layer_dense(units = 1, activation = "sigmoid")
+
+concrete_model_1 %>% compile(
+  loss = "binary_crossentropy",
+  optimizer = "adam",
+  metrics = "accuracy"
+)
+
+history <- concrete_model_1 %>% fit(
+  x = as.matrix(train_data[, -1]),
+  y = as.numeric(train_data$actual_productivity) - 1,
+  epochs = 50,
+  batch_size = 16,
+  verbose = 1
+)
+
+plot(history)
+```
