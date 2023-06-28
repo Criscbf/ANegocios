@@ -9,7 +9,7 @@ editor: visual
 ```{r}
 #Colocar ruta del dataframe
 
-df <- read.csv(""Criscbf/ANegocios/data/log2.csv"")
+df <- read.csv("Criscbf/ANegocios/data/log2.csv")
 ```
 
 ```{r , results='hide', warning=FALSE, message=FALSE}
