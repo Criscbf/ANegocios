@@ -5,7 +5,7 @@ editor: visual
 ---
 
 ```{r}
-df <- read.csv("C:/Users/aaron/Desktop/USM/Analisis de Negocios/garments_worker_productivity.csv")
+df <- read.csv("Criscbf/ANegocios/data/garments_worker_productivity.csv")
 ```
 
 ```{r}
